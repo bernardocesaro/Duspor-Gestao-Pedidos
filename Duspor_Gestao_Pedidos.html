@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Duspor · Gestão Integrada de Pedidos & Produção (v3)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
+<link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtQql2lGDFwBzX2ioT9FtfSg5YI09R19fCXUPJelllAA&s=10" type="image/png">
+<style>
+:root{--bg:#0e1013;--c:#16191e;--c2:#1d2127;--b:#2a2f37;--t:#e8eaee;--m:#8a92a0;--p:#ff5a45;--gray:#9ea3ae;--ok:#3fb27f;--er:#e5534b;--w:#e3a63a;--bl:#5b9bd5;--purple:#a855f7;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t);font:13.5px/1.5 Montserrat,system-ui,-apple-system,"Segoe UI",sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;padding:14px 24px;background:var(--c);border-bottom:1px solid var(--b)}
+.logo{display:flex;align-items:center;gap:12px}.logo svg{height:32px;width:auto;fill:var(--gray)}
+.logo b{display:block;font-size:23px;font-weight:800;letter-spacing:.06em;color:var(--p);line-height:1}
+.logo small{display:block;font:600 8px/1.3 Georgia,serif;letter-spacing:.1em;color:var(--t);text-align:right}
+nav{display:flex;gap:2px;flex:1;flex-wrap:wrap}
+button{font:inherit;cursor:pointer;color:var(--t);background:var(--c2);border:1px solid var(--b);border-radius:4px;padding:7px 14px;font-weight:600;transition:.15s}
+button:hover{border-color:var(--gray)}button:disabled{opacity:.4;cursor:default}
+button.pri{background:var(--p);border-color:var(--p);color:#fff}button.pri:hover{filter:brightness(1.1)}
+button.ok{background:var(--ok);border-color:var(--ok);color:#06130d}button.er{background:var(--er);border-color:var(--er);color:#fff}
+button.warn{background:var(--w);border-color:var(--w);color:#0e1013}
+.ghost{font-size:11px;background:none;color:var(--m)}
+.tab{border:0;border-bottom:2px solid transparent;background:none;border-radius:0;padding:8px 14px;color:var(--m);font-size:12px;letter-spacing:.07em;text-transform:uppercase}
+.tab:hover{color:var(--t)}.tab.on{color:var(--t);border-bottom-color:var(--p)}
+.tab em{font-style:normal;background:var(--p);color:#fff;border-radius:2px;padding:0 6px;margin-left:6px;font-size:11px}
+.sub{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:4px 24px 0;border-bottom:1px solid var(--b)}.sub .m{margin-left:auto;font-size:12px;padding-bottom:6px}
+.sweep{height:2px;background:var(--p);transform-origin:left;animation:sw .6s cubic-bezier(.2,.8,.2,1)}
+.view{padding:20px 24px 32px;animation:in .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes sw{from{transform:scaleX(0)}}@keyframes in{from{opacity:0;transform:translateX(24px)}}
+@keyframes gx{from{transform:scaleX(0)}}@keyframes gy{from{transform:scaleY(0)}}
+h3{font-size:17px;font-weight:700;margin:0 0 12px}
+h4{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin:0 0 10px}.m{color:var(--m);font-weight:400}
+main{display:grid;grid-template-columns:minmax(250px,330px) 1fr;gap:20px}
+@media(max-width:800px){main{grid-template-columns:1fr}.sub .m{display:none}.view{padding:16px}}
+.card{background:var(--c);border:1px solid var(--b);border-radius:6px;padding:14px 16px;margin-bottom:12px}
+.it{cursor:pointer;animation:in .4s both;transition:background .15s}.it:hover{background:var(--c2)}.it.sel{border-color:var(--p)}.it.pend{border-left:4px solid var(--p)}
+.bd{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--m)}
+.bd:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.bd.ok{color:var(--ok)}.bd.er{color:var(--er)}.bd.w{color:var(--w)}.bd.bl{color:var(--bl)}.bd.purple{color:var(--purple)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+table{width:100%;border-collapse:collapse}td{padding:5px 4px;border-bottom:1px solid var(--b)}td:last-child{text-align:right}
+tr.diff td{background:rgba(255,90,69,.16)}tr.tot td{font-weight:700;border-bottom:0}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}.w{grid-column:1/-1}
+label{display:flex;flex-direction:column;gap:4px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--m)}
+input,select,textarea{font:inherit;padding:7px 8px;border:1px solid var(--b);border-radius:4px;background:var(--bg);color:var(--t)}
+input:focus,select:focus,textarea:focus{outline:1px solid var(--p);border-color:var(--p)}
+.chk{flex-direction:row;align-items:center;gap:6px;color:var(--t);font-size:13px;text-transform:none;letter-spacing:0;font-weight:500}
+fieldset{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:16px;border:1px solid var(--b);border-radius:4px;padding:10px 14px}
+.alert{border-left:3px solid var(--er);background:rgba(229,83,75,.1);padding:8px 12px;margin-bottom:12px;border-radius:4px}
+.alert.warn{border-color:var(--w);background:rgba(230,119,0,.15)}
+.alert.info{border-color:var(--bl);background:rgba(91,155,213,.15)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.log{font-size:12px;border-left:2px solid var(--b);padding-left:10px;margin:0 0 8px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:12px}
+.kpi{background:var(--c);border:1px solid var(--b);border-top:2px solid var(--gray);padding:12px 14px;display:flex;flex-direction:column;gap:2px;animation:in .5s both}
+.kpi span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--m);font-weight:700}.kpi b{font-size:22px;font-weight:800}.kpi small{color:var(--m);font-size:11px}
+.kpi b.ok{color:var(--ok)}.kpi b.er{color:var(--er)}.kpi b.warn{color:var(--w)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}.grid2 .card{margin:0}
+.hb{display:grid;grid-template-columns:minmax(90px,150px) 1fr auto;gap:10px;align-items:center;margin-bottom:9px;font-size:12px}
+.tr{height:8px;background:var(--c2)}.tr i{display:block;height:100%;background:var(--gray);transform-origin:left;animation:gx .8s cubic-bezier(.2,.8,.2,1) both}.tr i.er{background:var(--er)}.tr i.warn{background:var(--w)}
+.vb{display:flex;gap:10px;height:190px}.vb>div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;font-size:11px;color:var(--m)}
+.vb i{width:100%;background:var(--gray);transform-origin:bottom;animation:gy .8s cubic-bezier(.2,.8,.2,1) both}.vb i.cur{background:var(--p)}
+.file-list{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.file-item{display:flex;align-items:center;justify-content:space-between;background:var(--c2);padding:6px 10px;border-radius:4px;font-size:12px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script>
+const {useState,useEffect}=React, html=htm.bind(React.createElement);
+const BRL=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+/* ================= MODEL: catálogo, regras de preço, estoque, retalhos, perdas ================= */
+const CAT={ 
+  mat:{'Lona PVC':380,'Aço galvanizado':620,'Alumínio':850},
+  motor:{'WEG 1 CV':3200,'WEG 2 CV':4600,'WEG 3 CV':6100},
+  sens:{'Radar de movimento':780,'Fotocélula':420,'Laço indutivo':950,'Cortina de luz':1350},
+  mont:{'Padrão':180,'Altura elevada':320}
+};
+
+// Estoque principal de matérias-primas e componentes
+const E0={'Lona PVC':30,'Aço galvanizado':12,'Alumínio':6,'WEG 1 CV':3,'WEG 2 CV':1,'WEG 3 CV':0,'Radar de movimento':5,'Fotocélula':4,'Laço indutivo':2,'Cortina de luz':0};
+// Retalhos reaproveitáveis de sobras de cortes anteriores
+const RET0=[
+  {id:'R1',mat:'Alumínio',tam:'1.8m',qtd:2,obs:'Sobra do Pedido #102'},
+  {id:'R2',mat:'Aço galvanizado',tam:'2.1m',qtd:1,obs:'Sobra de corte doca'}
+];
+
+const U=k=>k in CAT.mat?'m²':'un';
+
+const D0=()=>({
+  l:2,a:2.5,mat:'Aço galvanizado',motor:'WEG 1 CV',sens:['Radar de movimento'],mont:'Padrão',obs:'',
+  cobrarPerda:true, // Permite incluir taxa de desperdício/sobra de corte
+  usarRetalho:false // Tenta reaproveitar retalho disponível no estoque
+});
+
+const calc=d=>{
+  const a=+(d.l*d.a).toFixed(2);
+  const mFator = d.cobrarPerda ? 1.10 : 1.0; // 10% de margem de sobra/corte se ativo
+  const aCobrada = +(a * mFator).toFixed(2);
+  const matValor = aCobrada * CAT.mat[d.mat];
+  
+  const it=[
+    ['Material '+d.mat+' ('+a+' m²' + (d.cobrarPerda?' + 10% perda':'') + ')', matValor],
+    ['Motor '+d.motor, CAT.motor[d.motor]],
+    ...d.sens.map(s=>['Sensor '+s, CAT.sens[s]]),
+    ['Montagem '+d.mont, a*CAT.mont[d.mont]]
+  ];
+  return {a, aCobrada, it, total:it.reduce((s,x)=>s+x[1],0), bom:[[d.mat,aCobrada],[d.motor,1],...d.sens.map(s=>[s,1])]};
+};
+
+const F=[['Largura (m)','l'],['Altura (m)','a'],['Material','mat'],['Motor','motor'],['Sensores','sens'],['Montagem','mont'],['Cobrar Sobras/Perda','cobrarPerda'],['Observações','obs']];
+const val=(d,k)=>k==='sens'?(d.sens.join(', ')||'—'):k==='cobrarPerda'?(d.cobrarPerda?'Sim (+10%)':'Não (Área Exata)'):((d[k]||'—')+'');
+const dif=(a,b)=>F.filter(([n,k])=>val(a,k)!==val(b,k)).map(([n,k])=>n+': '+val(a,k)+' → '+val(b,k));
+const log=(quem,acao,det='')=>({t:new Date().toLocaleString('pt-BR'),quem,acao,det});
+
+// Status e Visibilidade (Matriz de Acesso)
+const ST={
+  RES:['Reservado · Aguardando validação','w'],
+  DEV:['Retornado ao Vendedor (Devolutiva)','purple'],
+  PROJ:['Aguardando Projetista','bl'],
+  DONO:['Aguardando Aprovador','w'],
+  PCP:['Aprovada · Aguardando PCP','ok'],
+  REPROV:['Reprovada · Em ajuste','er'],
+  SUP:['Aguardando Supervisor','bl'],
+  PROD:['Em Produção (Chão de Fábrica)','ok'],
+  CANC:['Cancelada','er']
+};
+
+const ROLES=['Vendedor','Projetista','Aprovador','PCP','Supervisor'];
+const PEND={
+  Vendedor:['DEV'],
+  Projetista:['PROJ','RES','REPROV'],
+  Aprovador:['DONO'],
+  PCP:['PCP'],
+  Supervisor:['SUP']
+};
+
+const mk=(id,cliente,obra,st,v,p,lg=[],x={})=>({
+  id,cliente,obra,st,v,p,compras:[],
+  arquivos:x.arquivos||[{nome:'Pré-projeto_inicial.pdf',autor:'Vendedor',data:'09/11 14:00'}],
+  log:[log('Vendedor','Pré-orçamento emitido'),...lg],...x
+});
+
+const AJ=log('Projetista','Ajustes técnicos confirmados'), AP=log('Aprovador','Aprovou a Ordem de Serviço');
+const HIST=[['Jun',182000],['Jul',214000],['Ago',196000],['Set',251000],['Out',233000]];
+const PERDAS=[['Medidas divergentes',31000],['Prazo de entrega',22000],['Desistência do cliente',15000]];
+const B4={...D0(),l:4,a:4,mat:'Alumínio',motor:'WEG 3 CV',sens:['Laço indutivo','Fotocélula']},B3={...D0(),l:2.5,a:3,mat:'Lona PVC'};
+
+const seed=()=>({
+  seq:7,
+  est:{...E0},
+  retalhos:[...RET0],
+  ped:[
+    mk(1,'Frigorífico Sul','Doca 3','PROJ',{...D0(),l:3,a:3.5,mat:'Alumínio',motor:'WEG 2 CV',sens:['Radar de movimento','Cortina de luz']},null),
+    mk(2,'Logística Oeste','Galpão B','RES',D0(),{...D0(),l:2.1,motor:'WEG 2 CV',obs:'Vão real medido na obra: 2,10 m'},[log('Vendedor','Reserva temporária ativada de estoque (5 dias)'),log('Projetista','Vão medido divergente')],{arquivos:[{nome:'Plantas_medicao_galpao.dxf',autor:'Projetista',data:'10/11 09:30'}]}),
+    mk(3,'Cooperativa Alfa','Câmara fria 2','DEV',B3,null,[log('Projetista','Retornado para complementação do Vendedor','Motivo: Falta definição do tipo de acionamento lateral')],{motivo:'Falta definição do acionamento'}),
+    mk(4,'Indústria Beta','Linha 4','PROD',B4,B4,[AJ,AP,log('PCP','Baixa definitiva de estoque efetuada'),log('Supervisor','Ordem de Produção atribuída para a fábrica','Equipe Carlos')],{equipe:'Equipe Carlos'}),
+    mk(5,'Atacadão Centro','Doca 1','CANC',D0(),{...D0(),l:2.4},[AJ,log('Aprovador','Reprovou pedido'),log('Projetista','Cancelado')],{motivo:'Cliente fechou com concorrente'}),
+    mk(6,'Transportadora TransRapido','Galpão 01','PCP',B3,B3,[AJ,AP],{arquivos:[{nome:'Aprovacao_assina_cliente.pdf',autor:'Vendedor',data:'10/11 11:15'}]})
+  ]
+});
+
+const KEY='duspor-mvp-v3';
+const load=()=>{try{const s=localStorage.getItem(KEY);if(s)return JSON.parse(s)}catch(e){}return seed()};
+
+/* ================= VIEW: componentes ================= */
+const Badge=({st})=>html`<span class=${'bd '+(ST[st] ? ST[st][1] : 'bl')}>${ST[st] ? ST[st][0] : st}</span>`;
+
+const Resumo=({t,d,o})=>html`<div class="card">
+  <h4>${t}</h4>
+  ${d?html`<table>
+    ${F.map(([n,k])=>html`<tr key=${k} class=${o&&val(d,k)!==val(o,k)?'diff':''}><td>${n}</td><td>${val(d,k)}</td></tr>`)}
+    <tr class="tot"><td>Total Orçado</td><td>${BRL(calc(d).total)}</td></tr>
+  </table>`:html`<p class="m">Aguardando preenchimento.</p>`}
+</div>`;
+
+const Calc=({d,set})=>{
+  const c=calc(d),f=(k,v)=>set({...d,[k]:v});
+  const num=k=>html`<input type="number" min="0.5" step="0.1" value=${d[k]} onChange=${e=>f(k,+e.target.value||0)}/>`;
+  const sel=(k,o)=>html`<select value=${d[k]} onChange=${e=>f(k,e.target.value)}>${Object.keys(o).map(x=>html`<option key=${x}>${x}</option>`)}</select>`;
+  return html`<div class="form">
+    <label>Largura (m)${num('l')}</label><label>Altura (m)${num('a')}</label>
+    <label>Material${sel('mat',CAT.mat)}</label><label>Motor${sel('motor',CAT.motor)}</label><label>Montagem${sel('mont',CAT.mont)}</label>
+    
+    <fieldset>
+      <legend class="m">Sensores e Acessórios</legend>
+      ${Object.keys(CAT.sens).map(s=>html`<label key=${s} class="chk">
+        <input type="checkbox" checked=${d.sens.includes(s)} onChange=${e=>f('sens',e.target.checked?[...d.sens,s]:d.sens.filter(x=>x!==s))}/>${s}
+      </label>`)}
+    </fieldset>
+
+    <fieldset>
+      <legend class="m">Regras de Cobrança e Sobras de Corte</legend>
+      <label class="chk">
+        <input type="checkbox" checked=${d.cobrarPerda} onChange=${e=>f('cobrarPerda',e.target.checked)}/>
+        Incluir taxa de sobra/desperdício de corte (+10% no material)
+      </label>
+    </fieldset>
+
+    <label class="w">Observações Técnicas<textarea value=${d.obs} onChange=${e=>f('obs',e.target.value)}></textarea></label>
+    
+    <div class="w card">
+      <table>
+        ${c.it.map(([n,v],i)=>html`<tr key=${i}><td>${n}</td><td>${BRL(v)}</td></tr>`)}
+        <tr class="tot"><td>Total Calculado</td><td>${BRL(c.total)}</td></tr>
+      </table>
+    </div>
+  </div>`;
+};
+
+const Novo=({ctl})=>{
+  const [cl,setCl]=useState(''),[ob,setOb]=useState(''),[tipo,setTipo]=useState('PROJ'),[d,setD]=useState(D0());
+  return html`<div class="card">
+    <h3>Novo Pré-Orçamento (Vendedor)</h3>
+    <div class="form">
+      <label>Cliente<input value=${cl} onChange=${e=>setCl(e.target.value)} placeholder="Razão social..."/></label>
+      <label>Obra / Local<input value=${ob} onChange=${e=>setOb(e.target.value)} placeholder="Ex: Galpão A, Doca 2..."/></label>
+      <label>Tipo de Envio
+        <select value=${tipo} onChange=${e=>setTipo(e.target.value)}>
+          <option value="PROJ">Enviar para Engenharia/Projetista</option>
+          <option value="RES">Ativar Reserva Temporária de Estoque (Falta medição)</option>
+        </select>
+      </label>
+    </div><br/>
+    <${Calc} d=${d} set=${setD}/>
+    <div class="acts">
+      <button class="pri" disabled=${!cl} onClick=${()=>ctl.criar(cl,ob,d,tipo)}>Confirmar e Enviar Pedido</button>
+    </div>
+  </div>`;
+};
+
+const Detalhe=({o,role,ctl})=>{
+  const [dr,setDr]=useState(o.p||o.v),[tx,setTx]=useState(''),[eq,setEq]=useState('Equipe Carlos'),[arqNome,setArqNome]=useState('');
+  
+  const proj = (role==='Projetista' && PEND.Projetista.includes(o.st));
+  const vendDev = (role==='Vendedor' && o.st==='DEV');
+  
+  return html`<div>
+    <h3>#${o.id} · ${o.cliente} <span class="m">— ${o.obra||'Sem localidade'}</span> <${Badge} st=${o.st}/></h3>
+    
+    ${o.compras.length>0&&html`<div class="alert"><b>⚠ Alerta PCP - Comprar Material:</b><br/>${o.compras.join(' · ')}</div>`}
+    ${o.st==='RES'&&html`<div class="alert info"><b>ℹ Reserva Temporária Ativa:</b> Este pedido está com saldo de estoque bloqueado temporariamente aguardando confirmação técnica.</div>`}
+    ${o.motivo&&['REPROV','CANC','DEV'].includes(o.st)&&html`<div class="alert warn"><b>Nota de Devolução/Observação:</b> ${o.motivo}</div>`}
+    ${o.equipe&&html`<div class="card"><b>Responsável pela Fabricação:</b> ${o.equipe}</div>`}
+
+    <div class="cols">
+      <${Resumo} t="Folha do Vendedor" d=${o.v}/>
+      <${Resumo} t="Folha da Engenharia (Destaque em Vermelho = Alterado)" d=${o.p} o=${o.v}/>
+    </div>
+
+    <!-- Seção de Anexo de Arquivos Centralizados -->
+    <div class="card">
+      <h4>📂 Documentos & Anexos Técnicos (DWG, DXF, PDF da Aprovação)</h4>
+      <div class="file-list">
+        ${o.arquivos.map((f,idx)=>html`<div key=${idx} class="file-item">
+          <span>📄 <b>${f.nome}</b> <span class="m">(${f.autor} em ${f.data})</span></span>
+          <button class="ghost" onClick=${()=>alert('Baixando arquivo '+f.nome)}>Download</button>
+        </div>`)}
+      </div>
+      <div class="acts">
+        <input placeholder="Nome do arquivo (ex: Planta_Final_Obra.dxf)" value=${arqNome} onChange=${e=>setArqNome(e.target.value)}/>
+        <button disabled=${!arqNome} onClick=${()=>{ctl.addArq(o.id,arqNome,role);setArqNome('')}}>+ Anexar Documento</button>
+      </div>
+    </div>
+
+    <!-- Painel de Ação por Perfil (Matriz de Acesso) -->
+    ${vendDev&&html`<div class="card">
+      <h4>Ajustar Dados e Reenviar (Vendedor)</h4>
+      <${Calc} d=${dr} set=${setDr}/>
+      <div class="acts">
+        <button class="pri" onClick=${()=>ctl.mv(o,'PROJ','Vendedor','Reenviado para Engenharia após complementação','', {v:dr})}>Reenviar para a Engenharia</button>
+      </div>
+    </div>`}
+
+    ${proj&&html`<div class="card">
+      <h4>Validação Técnica & Ajuste de Medidas (Projetista)</h4>
+      <${Calc} d=${dr} set=${setDr}/>
+      <div class="acts">
+        <button class="pri" onClick=${()=>ctl.mv(o,'DONO','Projetista','Medidas validadas & Folha de Aprovação gerada',dif(o.v,dr).join(' | ')||'Sem divergências',{p:dr})}>Confirmar Medidas e Enviar p/ Aprovador</button>
+        <input placeholder="Motivo do retorno/devolução ao vendedor" value=${tx} onChange=${e=>setTx(e.target.value)}/>
+        <button class="warn" disabled=${!tx} onClick=${()=>ctl.mv(o,'DEV','Projetista','Devolvido ao Vendedor','Motivo: '+tx,{motivo:tx})}>Devolver ao Vendedor</button>
+        <button class="er" disabled=${!tx} onClick=${()=>ctl.mv(o,'CANC','Projetista','Pedido Cancelado','Motivo: '+tx,{motivo:tx})}>Cancelar Pedido</button>
+      </div>
+    </div>`}
+
+    ${role==='Aprovador'&&o.st==='DONO'&&html`<div class="card">
+      <h4>Aprovação da Ordem de Serviço (Aprovador/Dono)</h4>
+      <div class="acts">
+        <button class="ok" onClick=${()=>ctl.mv(o,'PCP','Aprovador','Ordem de Serviço Aprovada')}>Aprovar Ordem de Serviço</button>
+        <input placeholder="Motivo da reprovação" value=${tx} onChange=${e=>setTx(e.target.value)}/>
+        <button class="er" disabled=${!tx} onClick=${()=>ctl.mv(o,'REPROV','Aprovador','Reprovou','Motivo: '+tx,{motivo:tx})}>Reprovar</button>
+      </div>
+    </div>`}
+
+    ${role==='PCP'&&o.st==='PCP'&&html`<div class="card">
+      <h4>Coordenação de Estoque & Baixa Definitiva (PCP)</h4>
+      <div class="acts">
+        <button class="pri" onClick=${()=>ctl.pcp(o)}>Efetuar Baixa Definitiva e Enviar para Produção</button>
+      </div>
+    </div>`}
+
+    ${role==='Supervisor'&&(o.st==='SUP'||o.st==='PROD')&&html`<div class="card">
+      <h4>Visão do Chão de Fábrica (Supervisor & Chefes de Equipe)</h4>
+      <p class="m">A fábrica visualiza a Folha de Aprovação do Cliente e a Lista de Materiais de Corte (BOM).</p>
+      ${o.st==='SUP'&&html`<div class="acts">
+        <select value=${eq} onChange=${e=>setEq(e.target.value)}>
+          ${['Equipe Carlos (Portas Seccionadas)','Equipe Marcos (Rápida PVC)','Equipe Jonas (Aço Inox)'].map(x=>html`<option key=${x}>${x}</option>`)}
+        </select>
+        <button class="pri" onClick=${()=>ctl.mv(o,'PROD','Supervisor','Ordem repassada ao chefe de equipe',eq,{equipe:eq})}>Atribuir à Equipe de Montagem</button>
+      </div>`}
+    </div>`}
+
+    <h4>Histórico de Transparência do Fluxo</h4>
+    ${o.log.map((l,i)=>html`<div key=${i} class="log">
+      <b>${l.quem}</b> · ${l.acao} <span class="m">(${l.t})</span>
+      ${l.det&&html`<br/><span class="m">${l.det}</span>`}
+    </div>`)}
+  </div>`;
+};
+
+const Estoque=({db,ctl})=>html`<div class="card">
+  <h3>Controle de Estoque & Sub-itens (Retalhos)</h3>
+  <h4>Estoque Principal de Matérias-Primas</h4>
+  <table>
+    ${Object.entries(db.est).map(([k,q])=>html`<tr key=${k}>
+      <td>${k}</td>
+      <td>${q} ${U(k)}</td>
+      <td>${q<=0?html`<span class="bd er">SEM ESTOQUE</span>`:q<=2?html`<span class="bd w">CRÍTICO</span>`:html`<span class="bd ok">OK</span>`}</td>
+    </tr>`)}
+  </table>
+
+  <br/>
+  <h4>📦 Inventário de Retalhos Reaproveitáveis (Sobras de Corte)</h4>
+  <table>
+    <thead><tr><th style=${{textAlign:'left'}}>ID</th><th style=${{textAlign:'left'}}>Material</th><th style=${{textAlign:'left'}}>Tamanho</th><th style=${{textAlign:'left'}}>Qtd</th><th style=${{textAlign:'left'}}>Origem/Obs</th></tr></thead>
+    <tbody>
+      ${db.retalhos.map(r=>html`<tr key=${r.id}>
+        <td><b>${r.id}</b></td>
+        <td>${r.mat}</td>
+        <td>${r.tam}</td>
+        <td>${r.qtd} un</td>
+        <td><span class="m">${r.obs}</span></td>
+      </tr>`)}
+    </tbody>
+  </table>
+
+  ${db.ped.filter(o=>o.compras.length).map(o=>html`<div key=${o.id} class="alert">Pedido #${o.id}: ${o.compras.join(' · ')}</div>`)}
+</div>`;
+
+const Logo=()=>html`<div class="logo">
+  <svg viewBox="0 0 480 447" aria-hidden="true"><path fillRule="evenodd" d="M234 0H388A90 90 0 0 1 478 90V236A90 90 0 0 1 388 326H258L83 447H0V86H234Z M234 172V86H380Q395 86 395 101V225Q395 240 380 240H234L85 340V172Z"/></svg>
+  <div><b>DUSPOR</b><small>PORTAS INDUSTRIAIS</small></div>
+</div>`;
+
+const Hb=({l,v,max,t,c,i})=>html`<div class="hb"><span>${l}</span><div class="tr"><i class=${c||''} style=${{width:(max?v/max*100:0)+'%',animationDelay:i*70+'ms'}}></i></div><b>${t}</b></div>`;
+const K=({l,v,s,c,i})=>html`<div class="kpi" style=${{animationDelay:i*60+'ms'}}><span>${l}</span><b class=${c||''}>${v}</b><small>${s}</small></div>`;
+
+const Dash=({db})=>{
+  const tot=o=>calc(o.p||o.v).total,vivos=db.ped.filter(o=>o.st!=='CANC'),canc=db.ped.filter(o=>o.st==='CANC');
+  const cart=vivos.reduce((s,o)=>s+tot(o),0),perd=canc.reduce((s,o)=>s+tot(o),0);
+  const ev=t=>db.ped.reduce((s,o)=>s+o.log.filter(l=>l.acao.startsWith(t)).length,0),ap=ev('Ordem de Serviço Aprovada'),rp=ev('Reprovou');
+  const meses=[...HIST,['Nov',cart]],mx=Math.max(...meses.map(m=>m[1]));
+  const perdas=[...PERDAS,['Cancelados no sistema',perd]],mp=Math.max(...perdas.map(p=>p[1]));
+  const et=Object.keys(ST).map(k=>[ST[k][0],db.ped.filter(o=>o.st===k).length]),me=Math.max(1,...et.map(e=>e[1]));
+  const crit=Object.entries(db.est).filter(([k,q])=>q<=2).sort((a,b)=>a[1]-b[1]);
+  return html`<div>
+    <div class="kpis">
+      <${K} i=${0} l="Carteira Ativa" v=${BRL(cart)} s=${vivos.length+' pedidos em aberto'}/>
+      <${K} i=${1} l="Em Validação Técnica" v=${db.ped.filter(o=>['PROJ','RES','DEV'].includes(o.st)).length} s="antes da aprovação"/>
+      <${K} i=${2} l="Taxa de Aprovação" v=${ap+rp?Math.round(ap/(ap+rp)*100)+'%':'100%'} s=${ap+' aprovações · '+rp+' devoluções'} c="ok"/>
+      <${K} i=${3} l="Perdas / Cancelados" v=${BRL(perd)} s=${canc.length+' pedido(s)'} c="er"/>
+      <${K} i=${4} l="Estoque Crítico" v=${crit.filter(c=>c[1]<=0).length} s="itens com saldo zero" c="warn"/>
+    </div>
+    <div class="grid2">
+      <div class="card"><h4>Vendas por Mês (R$)</h4><div class="vb">${meses.map(([m,v],i)=>html`<div key=${m}><b>${Math.round(v/1000)}k</b><i class=${i===meses.length-1?'cur':''} style=${{height:(v/mx*78)+'%',animationDelay:i*80+'ms'}}></i><span>${m}</span></div>`)}</div><p class="m">Jun–Out: histórico · Nov: carteira atualizada</p></div>
+      <div class="card"><h4>Motivos de Perda (R$)</h4>${perdas.map(([l,v],i)=>html`<${Hb} key=${l} l=${l} v=${v} max=${mp} t=${BRL(v)} c="er" i=${i}/>`)}</div>
+      <div class="card"><h4>Pedidos por Etapa do Fluxo</h4>${et.map(([l,v],i)=>html`<${Hb} key=${l} l=${l} v=${v} max=${me} t=${v} i=${i}/>`)}</div>
+      <div class="card"><h4>Itens de Estoque em Nível Crítico</h4>${crit.length?crit.map(([k,q],i)=>html`<${Hb} key=${k} l=${k} v=${q} max=${3} t=${q+' '+U(k)} c=${q<=0?'er':'warn'} i=${i}/>`):html`<p class="m">Nenhum item crítico.</p>`}</div>
+    </div>
+  </div>`;
+};
+
+/* ================= CONTROLLER: App ================= */
+const App=()=>{
+  const [db,setDb]=useState(load),[role,setRole]=useState('Vendedor'),[tab,setTab]=useState('ped'),[sel,setSel]=useState(null),[novo,setNovo]=useState(false);
+  useEffect(()=>{try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}},[db]);
+  
+  const upd=(id,fn)=>setDb(d=>({...d,ped:d.ped.map(o=>o.id===id?fn(o):o)}));
+  
+  const ctl={
+    mv:(o,st,quem,acao,det,extra)=>upd(o.id,x=>({...x,...extra,st,log:[...x.log,log(quem,acao,det)]})),
+    criar:(cliente,obra,v,st='PROJ')=>{
+      const novoId = db.seq;
+      setDb(d=>({
+        ...d,
+        seq:d.seq+1,
+        ped:[...d.ped,{
+          id:novoId,cliente,obra,st,v,p:null,compras:[],
+          arquivos:[{nome:'Pré-orcamento_calculadora.pdf',autor:'Vendedor',data:new Date().toLocaleDateString('pt-BR')}],
+          log:[log('Vendedor', st==='RES'?'Pré-orçamento emitido com RESERVA TEMPORÁRIA':'Pré-orçamento enviado para Engenharia', 'Total '+BRL(calc(v).total))]
+        }]
+      }));
+      setNovo(false);
+      setSel(novoId);
+    },
+    pcp:o=>setDb(d=>{
+      const est={...d.est}, ret=[...d.retalhos], c=[];
+      const bom = calc(o.p||o.v).bom;
+      
+      bom.forEach(([k,q])=>{
+        const h=est[k]||0;
+        est[k]=Math.max(0,+(h-q).toFixed(2));
+        if(h<q) c.push(k+': faltam '+(+(q-h).toFixed(2))+' '+U(k));
+      });
+      
+      // Gera retalho automático de sobra se o pedido calculou perda
+      if((o.p||o.v).cobrarPerda){
+        ret.push({
+          id:'R'+(ret.length+1),
+          mat:(o.p||o.v).mat,
+          tam:'1.2m',
+          qtd:1,
+          obs:'Sobra automatizada do Pedido #'+o.id
+        });
+      }
+
+      return {
+        ...d,est,retalhos:ret,
+        ped:d.ped.map(x=>x.id===o.id?{
+          ...x,st:'SUP',compras:c,
+          log:[...x.log,log('PCP','Baixa definitiva de estoque executada',c.length?'COMPRAR COMPONENTES → '+c.join('; '):'Estoque suficiente. Sobra cadastrada em retalhos.')]
+        }:x)
+      };
+    }),
+    addArq:(id,nome,autor)=>upd(id,x=>({
+      ...x,
+      arquivos:[...x.arquivos,{nome,autor,data:new Date().toLocaleString('pt-BR')}],
+      log:[...x.log,log(autor,'Anexou novo documento',nome)]
+    }))
+  };
+
+  const n=r=>db.ped.filter(o=>PEND[r].includes(o.st)).length, o=db.ped.find(x=>x.id===sel);
+  const ph={
+    Vendedor:'Elaboração de orçamento, reserva temporária e devolutivas',
+    Projetista:'Validação técnica de medidas e upload de plantas DXF',
+    Aprovador:'Aprovação formal da Ordem de Serviço pelo cliente/dono',
+    PCP:'Gestão de estoque, baixa definitiva e retalhos',
+    Supervisor:'Distribuição de ordens de produção para a fábrica'
+  };
+
+  return html`<header>
+    <${Logo}/>
+    <nav>
+      ${ROLES.map(r=>html`<button key=${r} class=${'tab'+(r===role?' on':'')} onClick=${()=>{setRole(r);setSel(null);setNovo(false)}}>
+        ${r}${n(r)>0&&html`<em>${n(r)}</em>`}
+      </button>`)}
+    </nav>
+    <button class="ghost" onClick=${()=>{setDb(seed());setSel(null)}}>Restaurar Dados Exemplo</button>
+  </header>
+  <div class="sweep" key=${'s'+role+tab}></div>
+  <div class="sub">
+    ${[['ped','Pedidos & Fluxo'],['dash','Dashboard de Gestão'],['est','Estoque & Retalhos']].map(([k,t])=>html`<button key=${k} class=${'tab'+(tab===k?' on':'')} onClick=${()=>setTab(k)}>${t}</button>`)}
+    <span class="m">Perfil Selecionado: <b>${role}</b> — ${ph[role]}</span>
+  </div>
+  <div class="view" key=${role+tab}>
+    ${tab==='dash'?html`<${Dash} db=${db}/>`:
+      tab==='est'?html`<${Estoque} db=${db} ctl=${ctl}/>`:
+      html`<main>
+        <div>
+          ${role==='Vendedor'&&html`<button class="pri" style=${{width:'100%',marginBottom:12}} onClick=${()=>{setNovo(true);setSel(null)}}>+ Novo Pré-Orçamento</button>`}
+          ${[...db.ped].reverse().map((x,i)=>html`<div key=${x.id} style=${{animationDelay:i*50+'ms'}} class=${'card it'+(x.id===sel?' sel':'')+(PEND[role].includes(x.st)?' pend':'')} onClick=${()=>{setSel(x.id);setNovo(false)}}>
+            <b>#${x.id} ${x.cliente}</b> <span class="m">${BRL(calc(x.p||x.v).total)}</span><br/>
+            <${Badge} st=${x.st}/>
+          </div>`)}
+        </div>
+        <div>
+          ${novo?html`<${Novo} ctl=${ctl}/>`:
+            o?html`<${Detalhe} key=${o.id+o.st} o=${o} role=${role} ctl=${ctl}/>`:
+            html`<div class="card m">Selecione um pedido na lista ao lado. A marcação em destaque indica pendência para o perfil selecionado (${role}).</div>`}
+        </div>
+      </main>`}
+  </div>`;
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(html`<${App}/>`);
+</script>
+</body>
+</html>
